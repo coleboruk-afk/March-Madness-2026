@@ -686,6 +686,15 @@
   }
   .player-item:hover { background: var(--sky); }
 
+  .roster-section-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    padding: 4px 8px 2px;
+  }
   /* ===== NO DATA ===== */
   .no-data { font-size: 12px; color: var(--text-3); text-align: center; padding: 18px; font-style: italic; }
 
@@ -738,7 +747,6 @@
     <button class="nav-tab active" data-tab="standings">Standings</button>
     <button class="nav-tab" data-tab="rosters">Rosters</button>
     <button class="nav-tab" data-tab="import">Import Data</button>
-    <button class="nav-tab" data-tab="teams">Manage Teams</button>
     <button class="nav-tab" data-tab="rules">Rules</button>
   </div>
 </div>
@@ -897,25 +905,6 @@ RJ Davis, Hoop Dreams, 95, 22, 41, 14, 3
   </div>
 
 </div><!-- /main -->
-
-<!-- MODAL -->
-<div class="modal-overlay" id="modal-team">
-  <div class="modal">
-    <div class="modal-title" id="modal-title">Rename Team</div>
-    <div class="form-row">
-      <label class="form-label">Fantasy Team Name *</label>
-      <input type="text" id="inp-team" placeholder="e.g. The Dunkmasters">
-    </div>
-    <div class="form-row">
-      <label class="form-label">Owner Name</label>
-      <input type="text" id="inp-owner" placeholder="e.g. Mike Johnson">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" onclick="saveTeam()">Save</button>
-      <button class="btn btn-danger btn-sm" onclick="closeModal()">Cancel</button>
-    </div>
-  </div>
-</div>
 
 <div class="toast" id="toast"></div>
 
@@ -1097,11 +1086,13 @@ function getSchoolStyle(school) {
 // ============ RENDER ROSTERS ============
 function renderRosters() {
   const c = document.getElementById('roster-cards');
-  if (!S.teams.length) { c.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><h3>No Rosters Yet</h3><p>Teams will appear here</p></div>'; return; }
+  if (!S.teams.length) { c.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><h3>No Rosters Yet</h3></div>'; return; }
   c.innerHTML = S.teams.map(t => {
     const s = S.stats[t.id]||{};
     const players = (s.players&&s.players.length) ? s.players : (t.players||[]);
-    const pRows = players.length ? players.map(p => {
+    const starters = players.filter(p=>p.starter);
+    const bench = players.filter(p=>!p.starter);
+    const makeRow = p => {
       const sc = getSchoolStyle(p.school||'');
       return `<div class="player-item">
         <div class="player-info">
@@ -1110,7 +1101,9 @@ function renderRosters() {
         </div>
         ${p.pos?`<span class="player-pos">${esc(p.pos)}</span>`:''}
       </div>`;
-    }).join('') : '<div class="no-data">No players listed</div>';
+    };
+    const starterRows = starters.length ? starters.map(makeRow).join('') : '';
+    const benchRows = bench.length ? bench.map(makeRow).join('') : '';
     const hasStats = s.pts!==undefined;
     const statRow = hasStats ? `<div class="roster-stats">
       ${CATS.map(c=>`<div class="rs-cell"><span class="rs-label">${CNAMES[c].slice(0,3)}</span><span class="rs-val">${s[c]||0}</span></div>`).join('')}
@@ -1118,9 +1111,13 @@ function renderRosters() {
     return `<div class="roster-card">
       <div class="roster-card-hdr">
         <div><div class="rc-name">${esc(t.name)}</div><div class="rc-owner">${esc(t.owner)}</div></div>
-        <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3)" onclick="editTeam('${t.id}')">✏️ Rename</button>
       </div>
-      <div class="player-list">${pRows}</div>${statRow}
+      <div class="player-list">
+        <div class="roster-section-label">⭐ Starters</div>
+        ${starterRows}
+        <div class="roster-section-label" style="margin-top:6px;">🪑 Bench</div>
+        ${benchRows}
+      </div>${statRow}
     </div>`;
   }).join('');
 }
@@ -1128,56 +1125,17 @@ function renderRosters() {
 // ============ RENDER TEAMS ============
 function renderTeams() {
   const l=document.getElementById('teams-list');
-  if (!S.teams.length) { l.innerHTML='<div class="empty-state"><div class="empty-icon">🏀</div><h3>No Teams</h3><p>Teams are pre-loaded from the draft</p></div>'; return; }
+  if (!S.teams.length) { l.innerHTML='<div class="empty-state"><div class="empty-icon">🏀</div><h3>No Teams</h3></div>'; return; }
   l.innerHTML = S.teams.map(t=>`
     <div class="team-item">
       <div>
         <div class="ti-name">${esc(t.name)}</div>
-        <div class="ti-owner">${esc(t.owner||'No owner set')}</div>
+        <div class="ti-owner">${esc(t.owner||'')}</div>
         <div class="ti-meta">${(t.players||[]).length} players · ${S.stats[t.id]?'Stats imported ✓':'No stats yet'}</div>
-      </div>
-      <div class="ti-actions">
-        <button class="btn btn-secondary btn-sm" onclick="editTeam('${t.id}')">✏️ Rename</button>
       </div>
     </div>`).join('');
 }
 
-// ============ TEAM CRUD ============
-let editId = null;
-function openAddTeam() {
-  editId=null;
-  document.getElementById('modal-title').textContent='Add Fantasy Team';
-  document.getElementById('inp-team').value='';
-  document.getElementById('inp-owner').value='';
-  document.getElementById('inp-players').value='';
-  document.getElementById('modal-team').classList.add('open');
-}
-function editTeam(id) {
-  const t=S.teams.find(t=>t.id===id); if(!t) return;
-  editId=id;
-  document.getElementById('modal-title').textContent='Rename Team';
-  document.getElementById('inp-team').value=t.name;
-  document.getElementById('inp-owner').value=t.owner||'';
-  document.getElementById('modal-team').classList.add('open');
-}
-function saveTeam() {
-  const name=document.getElementById('inp-team').value.trim();
-  const owner=document.getElementById('inp-owner').value.trim();
-  if(!name){showToast('Team name is required','error');return;}
-  if(editId){
-    const i=S.teams.findIndex(t=>t.id===editId);
-    if(i>=0) S.teams[i]={...S.teams[i],name,owner};
-    showToast('Team renamed!','success');
-  }
-  save(); closeModal(); renderTeams(); renderRosters(); renderStandings();
-}
-function deleteTeam(id) {
-  if(!confirm('Delete this team and all their stats?')) return;
-  S.teams=S.teams.filter(t=>t.id!==id);
-  delete S.stats[id];
-  save(); renderTeams(); renderRosters(); renderStandings();
-  showToast('Team deleted');
-}
 
 // ============ IMPORT ============
 function importStats() {
@@ -1210,10 +1168,6 @@ function clearStats() {
   showToast('Stats cleared');
 }
 
-// ============ MODAL ============
-function closeModal() { document.getElementById('modal-team').classList.remove('open'); }
-document.getElementById('modal-team').addEventListener('click', e=>{ if(e.target===document.getElementById('modal-team')) closeModal(); });
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
 
 // ============ TOAST ============
 let tt;
@@ -1230,117 +1184,117 @@ function fmt(n){return n%1===0?n:n.toFixed(1);}
 // ============ INIT ============
 // Pre-load the 8 teams with rosters if not already saved
 const DEFAULT_TEAMS = [
-  { id:'t_beangursh', name:'Bean Gursh', owner:'Bean Gursh', players:[
-    {name:'Cameron Boozer',pos:'F',school:'Duke'},
-    {name:'Milan Momcilovic',pos:'F',school:'Iowa State'},
-    {name:'Jaden Bradley',pos:'G',school:'Arizona'},
-    {name:'Boogie Fland',pos:'G',school:'Florida'},
-    {name:'Elliott Cadeau',pos:'G',school:'Michigan'},
-    {name:'Milos Uzan',pos:'G',school:'Houston'},
-    {name:'Thijs De Ridder',pos:'F',school:'Virginia'},
-    {name:'Braylon Mullins',pos:'G',school:'Arizona State'},
-    {name:'Coen Carr',pos:'F',school:'Michigan State'},
-    {name:'Caleb Foster',pos:'G',school:'Duke'},
-    {name:'CJ Cox',pos:'G',school:'Purdue'},
-    {name:'Maliq Brown',pos:'F',school:'Syracuse'},
+  { id:'t_beangursh', name:'Bussy Boozer', owner:'Brandon Gursahaney', players:[
+    {name:'Jaden Bradley',pos:'G',school:'Arizona',starter:true},
+    {name:'Elliott Cadeau',pos:'G',school:'Michigan',starter:true},
+    {name:'Boogie Fland',pos:'G',school:'Florida',starter:true},
+    {name:'Cameron Boozer',pos:'F',school:'Duke',starter:true},
+    {name:'Milan Momcilovic',pos:'F',school:'Iowa State',starter:true},
+    {name:'Milos Uzan',pos:'G',school:'Houston',starter:false},
+    {name:'CJ Cox',pos:'G',school:'Purdue',starter:false},
+    {name:'Caleb Foster',pos:'G',school:'Duke',starter:false},
+    {name:'Braylon Mullins',pos:'G',school:'UConn',starter:false},
+    {name:'Thijs De Ridder',pos:'F',school:'Virginia',starter:false},
+    {name:'Coen Carr',pos:'F',school:'Michigan State',starter:false},
+    {name:'Maliq Brown',pos:'F',school:'Duke',starter:false},
   ]},
   { id:'t_xander', name:'Xander', owner:'Xander', players:[
-    {name:'Yaxel Lendeborg',pos:'F',school:'Michigan'},
-    {name:'AJ Dybantsa',pos:'F',school:'BYU'},
-    {name:'Graham Ike',pos:'F',school:'Gonzaga'},
-    {name:'Donovan Dent',pos:'G',school:'UCLA'},
-    {name:'Fletcher Loyer',pos:'G',school:'Purdue'},
-    {name:'Oscar Cluff',pos:'C',school:'Purdue'},
-    {name:'Rob Wright',pos:'F',school:'BYU'},
-    {name:'Bennett Stirtz',pos:'G',school:'Iowa'},
-    {name:'Blake Buchanan',pos:'C',school:'Iowa State'},
-    {name:'Melvin Council',pos:'G',school:'VCU'},
-    {name:'Anthony Delorso',pos:'G',school:'Villanova'},
-    {name:'Omer Mayer',pos:'F',school:'Purdue'},
+    {name:'Yaxel Lendeborg',pos:'F',school:'Michigan',starter:true},
+    {name:'AJ Dybantsa',pos:'F',school:'BYU',starter:true},
+    {name:'Graham Ike',pos:'F',school:'Gonzaga',starter:true},
+    {name:'Donovan Dent',pos:'G',school:'UCLA',starter:true},
+    {name:'Fletcher Loyer',pos:'G',school:'Purdue',starter:true},
+    {name:'Oscar Cluff',pos:'C',school:'Purdue',starter:false},
+    {name:'Rob Wright',pos:'F',school:'BYU',starter:false},
+    {name:'Bennett Stirtz',pos:'G',school:'Iowa',starter:false},
+    {name:'Blake Buchanan',pos:'C',school:'Iowa State',starter:false},
+    {name:'Melvin Council',pos:'G',school:'VCU',starter:false},
+    {name:'Anthony Delorso',pos:'G',school:'Villanova',starter:false},
+    {name:'Omer Mayer',pos:'F',school:'Purdue',starter:false},
   ]},
-  { id:'t_bendo', name:'Bendo', owner:'Bendo', players:[
-    {name:'Thomas Haugh',pos:'F',school:'Florida'},
-    {name:'Alex Condon',pos:'C',school:'Florida'},
-    {name:'Koa Peat',pos:'F',school:'Arizona'},
-    {name:'Solo Ball',pos:'G',school:'UConn'},
-    {name:'Tamin Lipsey',pos:'G',school:'Iowa State'},
-    {name:'Trey McKenney',pos:'G',school:'Michigan'},
-    {name:'Ryan Conwell',pos:'G',school:'Louisville'},
-    {name:'Paulius Murauskas',pos:'F',school:"Saint Mary's"},
-    {name:'Pryce Sandfort',pos:'G',school:'Nebraska'},
-    {name:'Mario',pos:'G',school:''},
-    {name:'Peja Stojakovic Jr.',pos:'G',school:'Illinois'},
-    {name:'Nikolas Khamenia',pos:'F',school:'Duke'},
+  { id:'t_bendo', name:'Ball Movement', owner:'Bendo', players:[
+    {name:'Ryan Conwell',pos:'G',school:'Louisville',starter:true},
+    {name:'Paulius Murauskas',pos:'F',school:"Saint Mary's",starter:true},
+    {name:'Alex Condon',pos:'F',school:'Florida',starter:true},
+    {name:'Thomas Haugh',pos:'F',school:'Florida',starter:true},
+    {name:'Pryce Sandfort',pos:'F',school:'Nebraska',starter:true},
+    {name:'Solo Ball',pos:'G',school:'UConn',starter:false},
+    {name:'Koa Peat',pos:'F',school:'Arizona',starter:false},
+    {name:'Peja Stojakovic Jr.',pos:'G',school:'Illinois',starter:false},
+    {name:'Trey McKenney',pos:'G',school:'Michigan',starter:false},
+    {name:'Tamin Lipsey',pos:'G',school:'Iowa State',starter:false},
+    {name:'Mario Saint-Supery',pos:'G',school:'Gonzaga',starter:false},
+    {name:'Nikolas Khamenia',pos:'G',school:'Duke',starter:false},
   ]},
-  { id:'t_bray', name:'Bray', owner:'Bray', players:[
-    {name:'Darius Acuff Jr.',pos:'G',school:'Arkansas'},
-    {name:'Reuben Chinyelu',pos:'C',school:'Florida'},
-    {name:'Keaton Wagler',pos:'G',school:'Illinois'},
-    {name:'Daryn Peterson',pos:'G',school:'Kansas'},
-    {name:'Flory Bidunga',pos:'C',school:'Kansas'},
-    {name:'Alex Karaban',pos:'F',school:'UConn'},
-    {name:'Malik Reneau',pos:'F',school:'Miami (FL)'},
-    {name:'John Blackwell',pos:'G',school:'Wisconsin'},
-    {name:'Robbie Avila',pos:'F',school:'Saint Louis'},
-    {name:'Bruce Thornton',pos:'G',school:'Ohio State'},
-    {name:'Ugonna Onyenso',pos:'C',school:'Virginia'},
-    {name:'TJ Power',pos:'G',school:'Texas Tech'},
+  { id:'t_bray', name:'Acuff Me Daddy', owner:'Brayden Green', players:[
+    {name:'Darius Acuff Jr.',pos:'G',school:'Arkansas',starter:true},
+    {name:'Daryn Peterson',pos:'G',school:'Kansas',starter:true},
+    {name:'Keaton Wagler',pos:'G',school:'Illinois',starter:true},
+    {name:'Alex Karaban',pos:'F',school:'UConn',starter:true},
+    {name:'Reuben Chinyelu',pos:'C',school:'Florida',starter:true},
+    {name:'Flory Bidunga',pos:'F',school:'Kansas',starter:false},
+    {name:'Malik Reneau',pos:'F',school:'Miami (FL)',starter:false},
+    {name:'John Blackwell',pos:'G',school:'Wisconsin',starter:false},
+    {name:'Robbie Avila',pos:'F',school:'Saint Louis',starter:false},
+    {name:'Bruce Thornton',pos:'G',school:'Ohio State',starter:false},
+    {name:'Ugonna Onyenso',pos:'C',school:'Virginia',starter:false},
+    {name:'TJ Power',pos:'G',school:'Texas Tech',starter:false},
   ]},
   { id:'t_cole', name:'Cole', owner:'Cole', players:[
-    {name:'Dame Sarr',pos:'G',school:'Duke'},
-    {name:'Braden Smith',pos:'G',school:'Purdue'},
-    {name:'Jeremy Fears Jr.',pos:'G',school:'Michigan State'},
-    {name:'Cayden Boozer',pos:'G',school:'Duke'},
-    {name:'Jaxon Kohler',pos:'F',school:'Michigan State'},
-    {name:'Nate Ament',pos:'F',school:'Tennessee'},
-    {name:'Tobe Awaka',pos:'F',school:'Gonzaga'},
-    {name:'Joseph Tugler',pos:'F',school:'Houston'},
-    {name:'Tavari Johnson',pos:'G',school:'Akron'},
-    {name:'Wes Enis',pos:'G',school:'South Florida'},
-    {name:'Thomas Dowd',pos:'F',school:'UConn'},
-    {name:'Mark Mitchell',pos:'G',school:'Missouri'},
+    {name:'Mark Mitchell',pos:'G',school:'Missouri',starter:true},
+    {name:'Braden Smith',pos:'G',school:'Purdue',starter:true},
+    {name:'Nate Ament',pos:'F',school:'Tennessee',starter:true},
+    {name:'Jaxon Kohler',pos:'F',school:'Michigan State',starter:true},
+    {name:'Jeremy Fears Jr.',pos:'G',school:'Michigan State',starter:true},
+    {name:'Dame Sarr',pos:'G',school:'Duke',starter:false},
+    {name:'Tobe Awaka',pos:'F',school:'Gonzaga',starter:false},
+    {name:'Joseph Tugler',pos:'F',school:'Houston',starter:false},
+    {name:'Tavari Johnson',pos:'G',school:'Akron',starter:false},
+    {name:'Wes Enis',pos:'G',school:'South Florida',starter:false},
+    {name:'Thomas Dowd',pos:'F',school:'UConn',starter:false},
+    {name:'Cayden Boozer',pos:'G',school:'Duke',starter:false},
   ]},
-  { id:'t_fran', name:'Fran', owner:'Fran', players:[
-    {name:'Kingston Flemings',pos:'G',school:'Houston'},
-    {name:'Aday Mara',pos:'C',school:'Michigan'},
-    {name:'Trey Kaufman-Renn',pos:'F',school:'Purdue'},
-    {name:'Zuby Ejiofor',pos:'F',school:"St. John's"},
-    {name:'David Mirkovic',pos:'F',school:'Illinois'},
-    {name:'Christian Anderson',pos:'G',school:'Texas Tech'},
-    {name:'Xavien Lee',pos:'G',school:'Florida'},
-    {name:'Chris Cenac Jr.',pos:'F',school:'Houston'},
-    {name:'Nimari Burnett',pos:'G',school:'Michigan'},
-    {name:'Tomislav Ivisic',pos:'C',school:'Illinois'},
-    {name:'Urban Klavzar',pos:'G',school:'Alabama'},
-    {name:'Carson Cooper',pos:'C',school:'Indiana'},
+  { id:'t_fran', name:'Herro There Xavien', owner:'Alex Francani', players:[
+    {name:'Kingston Flemings',pos:'G',school:'Houston',starter:true},
+    {name:'Christian Anderson',pos:'G',school:'Texas Tech',starter:true},
+    {name:'Trey Kaufman-Renn',pos:'F',school:'Purdue',starter:true},
+    {name:'Zuby Ejiofor',pos:'F',school:"St. John's",starter:true},
+    {name:'Aday Mara',pos:'C',school:'Michigan',starter:true},
+    {name:'David Mirkovic',pos:'F',school:'Illinois',starter:false},
+    {name:'Xavien Lee',pos:'G',school:'Florida',starter:false},
+    {name:'Chris Cenac Jr.',pos:'F',school:'Houston',starter:false},
+    {name:'Nimari Burnett',pos:'G',school:'Michigan',starter:false},
+    {name:'Tomislav Ivisic',pos:'C',school:'Illinois',starter:false},
+    {name:'Urban Klavzar',pos:'G',school:'Alabama',starter:false},
+    {name:'Carson Cooper',pos:'C',school:'Indiana',starter:false},
   ]},
-  { id:'t_ant', name:'Ant', owner:'Ant', players:[
-    {name:'Brayden Burries',pos:'G',school:'Arizona'},
-    {name:'Joshua Jefferson',pos:'F',school:'Iowa State'},
-    {name:'Emmanuel Sharp',pos:'G',school:'Houston'},
-    {name:'Montejas Krevas',pos:'G',school:'Virginia'},
-    {name:'Taris Reed Jr.',pos:'C',school:'UConn'},
-    {name:'Labaron Philon',pos:'G',school:'Alabama'},
-    {name:'Silas Demary Jr.',pos:'G',school:'UConn'},
-    {name:'Ivan Kharchenkov',pos:'F',school:'Michigan State'},
-    {name:'Kylan Boswell',pos:'G',school:'Illinois'},
-    {name:'Trevon Brazile',pos:'F',school:'Arkansas'},
-    {name:'Patrick Ngongba',pos:'C',school:'Duke'},
-    {name:'Kyliian Toure',pos:'G',school:'Iowa State'},
+  { id:'t_ant', name:'Burries and Cream', owner:'Anthony Giribaldi', players:[
+    {name:'Brayden Burries',pos:'G',school:'Arizona',starter:true},
+    {name:'Labaron Philon',pos:'G',school:'Alabama',starter:true},
+    {name:'Silas Demary Jr.',pos:'G',school:'UConn',starter:true},
+    {name:'Joshua Jefferson',pos:'F',school:'Iowa State',starter:true},
+    {name:'Taris Reed Jr.',pos:'C',school:'UConn',starter:true},
+    {name:'Trevon Brazile',pos:'F',school:'Arkansas',starter:false},
+    {name:'Ivan Kharchenkov',pos:'F',school:'Arizona',starter:false},
+    {name:'Montejas Krevas',pos:'C',school:'Arizona',starter:false},
+    {name:'Kylan Boswell',pos:'G',school:'Illinois',starter:false},
+    {name:'Kyliian Toure',pos:'G',school:'Iowa State',starter:false},
+    {name:'Patrick Ngongba',pos:'C',school:'Duke',starter:false},
+    {name:'Emmanuel Sharp',pos:'G',school:'Houston',starter:false},
   ]},
-  { id:'t_dalv', name:'Dalv', owner:'Dalv', players:[
-    {name:'Isaiah Evans',pos:'G',school:'Duke'},
-    {name:'Morez Johnson Jr.',pos:'F',school:'Michigan'},
-    {name:'Tyler Tanner',pos:'G',school:'Vanderbilt'},
-    {name:'Duke Miles',pos:'G',school:'Vanderbilt'},
-    {name:'Nick Boyd',pos:'G',school:'Wisconsin'},
-    {name:'Jakobi Gillespie',pos:'G',school:'Tennessee'},
-    {name:'Meleek Thomas',pos:'G',school:'Arkansas'},
-    {name:'Tyler Bilodeau',pos:'F',school:'UCLA'},
-    {name:'Otega Oweh',pos:'G',school:'Kansas'},
-    {name:'Tyon Grant-Foster',pos:'F',school:'Gonzaga'},
-    {name:'Tre White',pos:'G',school:'Kansas'},
-    {name:'Nolan Winter',pos:'C',school:'Wisconsin'},
+  { id:'t_dalv', name:"Ja'Kobi Wan Kenobi", owner:'Brennan Devlin', players:[
+    {name:'Tyler Bilodeau',pos:'F',school:'UCLA',starter:true},
+    {name:'Nick Boyd',pos:'G',school:'Wisconsin',starter:true},
+    {name:'Tyler Tanner',pos:'G',school:'Vanderbilt',starter:true},
+    {name:'Otega Oweh',pos:'G',school:'Kansas',starter:true},
+    {name:'Jakobi Gillespie',pos:'G',school:'Tennessee',starter:true},
+    {name:'Morez Johnson Jr.',pos:'F',school:'Michigan',starter:false},
+    {name:'Nolan Winter',pos:'C',school:'Wisconsin',starter:false},
+    {name:'Isaiah Evans',pos:'G',school:'Duke',starter:false},
+    {name:'Duke Miles',pos:'G',school:'Vanderbilt',starter:false},
+    {name:'Meleek Thomas',pos:'G',school:'Arkansas',starter:false},
+    {name:'Tyon Grant-Foster',pos:'G',school:'Gonzaga',starter:false},
+    {name:'Tre White',pos:'G',school:'Kansas',starter:false},
   ]},
 ];
 

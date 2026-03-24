@@ -36,7 +36,6 @@
     --shadow: 0 4px 12px rgba(15,42,78,0.1), 0 2px 4px rgba(15,42,78,0.06);
     --shadow-lg: 0 12px 32px rgba(15,42,78,0.12), 0 4px 8px rgba(15,42,78,0.08);
   }
-  }
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
     background: var(--bg);
@@ -699,7 +698,96 @@
   /* ===== NO DATA ===== */
   .no-data { font-size: 12px; color: var(--text-3); text-align: center; padding: 18px; font-style: italic; }
 
-  @keyframes fadeInUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  /* ===== TOURNAMENT POINTS ===== */
+  .tp-team-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .tp-team-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-light);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .tp-team-hdr:hover { background: var(--surface-2); }
+  .tp-rank-badge {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 13px;
+    flex-shrink: 0; margin-right: 12px;
+  }
+  .tp-rank-1 { background: #fef3c7; color: #92400e; border: 2px solid #d97706; }
+  .tp-rank-2 { background: #f0f4f8; color: #4a6080; border: 1px solid #d1dce8; }
+  .tp-rank-other { background: var(--surface-2); color: var(--text-3); border: 1px solid var(--border-light); }
+  .tp-team-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; color: var(--navy); }
+  .tp-team-owner { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .tp-total { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--navy); line-height: 1; }
+  .tp-total small { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 400; color: var(--text-3); letter-spacing: 1px; }
+  .tp-players-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tp-players-tbl th {
+    padding: 7px 14px; text-align: left;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 10px;
+    letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-3);
+    background: var(--surface-2); border-bottom: 1px solid var(--border-light);
+  }
+  .tp-players-tbl th.r { text-align: right; }
+  .tp-players-tbl td { padding: 7px 14px; border-bottom: 1px solid var(--border-light); color: var(--text); }
+  .tp-players-tbl tr:last-child td { border-bottom: none; }
+  .tp-players-tbl tr:hover td { background: var(--sky); }
+  .tp-r1-dot { display:inline-block;width:7px;height:7px;border-radius:50%;background:#2563eb;margin-right:3px; }
+  .tp-r2-dot { display:inline-block;width:7px;height:7px;border-radius:50%;background:#16a34a;margin-right:3px; }
+  .tp-badge-swap { background:#fef3c7;border:1px solid #fde68a;color:#92400e;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:5px; }
+  .tp-badge-elim { background:#fef2f2;border:1px solid #fecaca;color:#dc2626;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:5px; }
+  .tp-badge-in   { background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:5px; }
+  .tp-pts-bold { font-weight: 600; color: var(--navy); }
+  .tp-cats-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .tp-cat-cell {
+    background: var(--surface-2);
+    padding: 8px 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .tp-cat-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .tp-cat-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1;
+  }
+  .tp-cat-val.tp-cat-lead {
+    color: var(--gold);
+  }
+  .tp-cat-score {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    color: var(--blue);
+    font-weight: 600;
+  }
+
+
+
 
   @media (max-width: 960px) {
     .standing-row { grid-template-columns: 44px 1fr repeat(5,56px) 76px; }
@@ -732,7 +820,7 @@
     <div class="header-text">
       <div class="year-badge">🏀 2026 NCAA Tournament</div>
       <h1 class="site-title">Fantasy League</h1>
-      <div class="site-subtitle">GV 5th Annual March Madness Fantasy</div>
+      <div class="site-subtitle">Category Scoring Scoreboard</div>
       <div class="prize-strip">
         <div class="prize-pill gold">🥇 1st — $50</div>
         <div class="prize-pill silver">🥈 2nd — $25</div>
@@ -747,7 +835,7 @@
   <div class="nav-inner" id="nav-tabs">
     <button class="nav-tab active" data-tab="standings">Standings</button>
     <button class="nav-tab" data-tab="rosters">Rosters</button>
-    <button class="nav-tab" data-tab="import">Import Data</button>
+    <button class="nav-tab" data-tab="tourney">Tournament Points</button>
     <button class="nav-tab" data-tab="rules">Rules</button>
   </div>
 </div>
@@ -787,44 +875,37 @@
     </div>
   </div>
 
-  <!-- IMPORT -->
-  <div id="panel-import" class="panel">
-    <div class="card" style="border-left: 4px solid var(--blue);">
-      <div class="card-label">Step 1</div>
-      <h3>Set Up Your Teams First</h3>
-      <p>Go to <strong>Manage Teams</strong> to add all fantasy owners. The exact team name you set there must match what you paste in the stats import below.</p>
-      <button class="btn btn-secondary btn-sm" onclick="switchTab('teams')">→ Go to Manage Teams</button>
+  <!-- TOURNAMENT POINTS -->
+  <div id="panel-tourney" class="panel">
+    <div class="section-header">
+      <div class="section-title">Tournament Points — Rounds 1 &amp; 2</div>
+      <div class="update-badge"><span style="font-size:12px;color:var(--text-3);">Mar 19–22, 2026 · Points scored by each team's starters</span></div>
     </div>
 
-    <div class="card">
-      <div class="card-label">Step 2 — After Each Weekend</div>
-      <h3>Paste That Weekend's Player Stats</h3>
-      <p>Paste the stats earned <strong>this weekend only</strong> for all active players. One player per line. The Fantasy Team Name must match exactly. Each import <strong>adds on top of</strong> previous totals — scores stack weekend over weekend.</p>
-      <div class="format-box">Player Name, Fantasy Team Name, PTS, REB, AST, STL, BLK
-Zach Edey, The Dunkmasters, 88, 62, 12, 5, 18
-Caleb Love, Bracket Busters, 71, 18, 34, 11, 2
-RJ Davis, Hoop Dreams, 95, 22, 41, 14, 3
-# Lines starting with # are ignored (use for notes)</div>
-      <textarea id="stats-input" placeholder="Paste your player stats here...&#10;&#10;Format: Player Name, Fantasy Team Name, PTS, REB, AST, STL, BLK&#10;One player per line"></textarea>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="importStats()">⚡ Import &amp; Recalculate</button>
-        <button class="btn btn-danger btn-sm" onclick="clearStats()">Clear All Stats</button>
-      </div>
+    <div class="stat-overview" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;">
+      <div class="stat-ov-card"><span class="stat-ov-label">Fantasy Pts Leader</span><div class="stat-ov-leader" id="tp-leader-name">—</div></div>
+      <div class="stat-ov-card"><span class="stat-ov-label">Their Fantasy Score</span><div class="stat-ov-val" id="tp-leader-pts" style="font-size:28px;font-weight:700;color:var(--navy);">—</div></div>
+      <div class="stat-ov-card"><span class="stat-ov-label">League Average</span><div class="stat-ov-val" id="tp-avg-pts" style="font-size:28px;font-weight:700;color:var(--navy);">—</div></div>
     </div>
 
-    <div class="card" style="background: #f0f7ff; border-color: #bfdbfe;">
-      <div class="card-label">Notes</div>
-      <h3>How Importing Works</h3>
-      <p>
-        • Each import <strong>adds onto</strong> existing stats — scores accumulate weekend over weekend.<br>
-        • Paste only <strong>that weekend's stats</strong> each time — don't re-paste previous weekends.<br>
-        • Players from eliminated real-life teams stop earning stats — simply don't include them in future imports.<br>
-        • Duplicate players on multiple fantasy teams are each counted for their respective owner.<br>
-        • Use <strong>Clear All Stats</strong> only if you need to start completely over from scratch.
-      </p>
+    <div style="background:var(--gold-light);border:1px solid #fde68a;border-radius:8px;padding:10px 16px;margin-bottom:20px;font-size:12px;color:#92400e;">
+      🏆 <strong>Scoring:</strong> 8 fantasy pts to the team with the most cumulative PTS, 7 to 2nd … 1 to last. Same for REB, AST, STL, BLK. Max = 40 pts. &nbsp;|&nbsp;
+      ⚠️ <strong>Xan's swap:</strong> Stirtz in for Loyer. &nbsp;|&nbsp;
+      <span style="background:#fef2f2;border:1px solid #fecaca;border-radius:4px;padding:2px 6px;color:#dc2626;font-size:11px;">1 gm</span> = elim R1 &nbsp;|&nbsp;
+      <span style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:2px 6px;color:#16a34a;font-size:11px;">still in</span> = Sweet 16 &nbsp;|&nbsp;
+      🥇 gold stat = category leader
+    </div>
+
+    <div id="tp-teams-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+
+    <div style="margin-top:20px;font-size:11px;color:var(--text-3);border-top:1px solid var(--border);padding-top:12px;">
+      * Silas Demary Jr. (UConn) did not start R1 due to injury; returned off bench in R2. Joshua Jefferson (Iowa State) left R1 with ankle injury, did not play R2.
+      Tyler Bilodeau (UCLA) sat out R2 with knee injury. Nick Boyd (Wisconsin) eliminated R1.
+      Some stats (Cadeau R2, Fland, Chinyelu) estimated from game reports where exact box scores unavailable.
     </div>
   </div>
 
+  <!-- IMPORT -->
   <!-- MANAGE TEAMS -->
   <div id="panel-teams" class="panel">
     <div class="section-header">
@@ -1088,6 +1169,13 @@ function getSchoolStyle(school) {
 function renderRosters() {
   const c = document.getElementById('roster-cards');
   if (!S.teams.length) { c.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><h3>No Rosters Yet</h3></div>'; return; }
+
+  // Build set of eliminated schools from tournament data
+  const elimSchools = new Set([
+    'BYU','Gonzaga','Florida','Louisville',"St. Mary's",'Kansas','UCLA',
+    'Vanderbilt','Wisconsin','Texas Tech','Florida State','Virginia'
+  ]);
+
   c.innerHTML = S.teams.map(t => {
     const s = S.stats[t.id]||{};
     const players = (s.players&&s.players.length) ? s.players : (t.players||[]);
@@ -1095,10 +1183,13 @@ function renderRosters() {
     const bench = players.filter(p=>!p.starter);
     const makeRow = p => {
       const sc = getSchoolStyle(p.school||'');
-      return `<div class="player-item">
+      const isElim = elimSchools.has(p.school);
+      const elimStyle = isElim ? 'background:#fef2f2;border-left:3px solid #dc2626;opacity:0.8;' : '';
+      const elimTag = isElim ? '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:#dc2626;color:#fff;border-radius:3px;padding:1px 5px;margin-left:5px;">OUT</span>' : '';
+      return `<div class="player-item" style="${elimStyle}">
         <div class="player-info">
-          <span class="player-name">${esc(p.name)}</span>
-          ${p.school?`<span class="player-school" style="background:${sc.bg};color:${sc.text}">${esc(p.school)}</span>`:''}
+          <span class="player-name" style="${isElim?'color:#dc2626;':''}">${esc(p.name)}</span>${elimTag}
+          ${p.school?`<span class="player-school" style="background:${sc.bg};color:${sc.text};${isElim?'opacity:0.6;':''}">${esc(p.school)}</span>`:''}
         </div>
         ${p.pos?`<span class="player-pos">${esc(p.pos)}</span>`:''}
       </div>`;
@@ -1121,6 +1212,219 @@ function renderRosters() {
       </div>${statRow}
     </div>`;
   }).join('');
+}
+
+// ============ TOURNAMENT POINTS ============
+// Each player: pts, reb, ast, stl, blk are TOTALS across R1+R2
+// note: 'elim'=only played R1, 'swap'=Xan's lineup change, ''=played both
+const TP_TEAMS = [
+  { name:'Bussy Boozer', owner:'Brandon G.',
+    players:[
+      {name:'Jaden Bradley',    school:'Arizona',    pts:36, reb:8,  ast:9,  stl:3, blk:0, note:''},
+      {name:'Elliott Cadeau',   school:'Michigan',   pts:20, reb:5,  ast:11, stl:2, blk:0, note:''},
+      {name:'Boogie Fland',     school:'Florida',    pts:31, reb:5,  ast:7,  stl:2, blk:0, note:'elim'},
+      {name:'Cameron Boozer',   school:'Duke',       pts:41, reb:24, ast:9,  stl:3, blk:2, note:''},
+      {name:'Milan Momcilovic', school:'Iowa State', pts:44, reb:8,  ast:4,  stl:1, blk:0, note:''},
+    ]
+  },
+  { name:'Xander', owner:'Xander',
+    players:[
+      {name:'Yaxel Lendeborg',  school:'Michigan',  pts:34, reb:10, ast:5,  stl:1, blk:3, note:''},
+      {name:'AJ Dybantsa',      school:'BYU',       pts:35, reb:10, ast:1,  stl:0, blk:1, note:'elim'},
+      {name:'Graham Ike',       school:'Gonzaga',   pts:44, reb:15, ast:2,  stl:1, blk:1, note:'elim'},
+      {name:'Donovan Dent',     school:'UCLA',      pts:21, reb:5,  ast:13, stl:7, blk:0, note:'elim'},
+      {name:'Bennett Stirtz',   school:'Iowa',      pts:29, reb:9,  ast:6,  stl:2, blk:0, note:''},
+    ]
+  },
+  { name:'Ball Movement', owner:'Bendo',
+    players:[
+      {name:'Ryan Conwell',      school:'Louisville', pts:44, reb:9,  ast:5,  stl:3, blk:0, note:'elim'},
+      {name:'Paulius Murauskas', school:"St. Mary's", pts:9,  reb:4,  ast:1,  stl:0, blk:1, note:'elim'},
+      {name:'Alex Condon',       school:'Florida',    pts:35, reb:12, ast:7,  stl:2, blk:2, note:'elim'},
+      {name:'Thomas Haugh',      school:'Florida',    pts:30, reb:9,  ast:3,  stl:1, blk:1, note:'elim'},
+      {name:'Pryce Sandfort',    school:'Nebraska',   pts:38, reb:10, ast:3,  stl:1, blk:0, note:''},
+    ]
+  },
+  { name:'Acuff Me Daddy', owner:'Brayden Green',
+    players:[
+      {name:'Darius Acuff Jr.', school:'Arkansas',  pts:62, reb:5,  ast:13, stl:2, blk:0, note:''},
+      {name:'Daryn Peterson',   school:'Kansas',    pts:28, reb:4,  ast:4,  stl:1, blk:0, note:'elim'},
+      {name:'Keaton Wagler',    school:'Illinois',  pts:36, reb:7,  ast:11, stl:2, blk:0, note:''},
+      {name:'Alex Karaban',     school:'UConn',     pts:49, reb:10, ast:5,  stl:1, blk:1, note:''},
+      {name:'Reuben Chinyelu',  school:'Florida',   pts:16, reb:18, ast:2,  stl:1, blk:4, note:'elim'},
+    ]
+  },
+  { name:'Cole', owner:'Cole',
+    players:[
+      {name:'Dame Sarr',        school:'Duke',        pts:24, reb:6,  ast:4,  stl:1, blk:1, note:''},
+      {name:'Braden Smith',     school:'Purdue',      pts:41, reb:7,  ast:20, stl:2, blk:0, note:''},
+      {name:'Cayden Boozer',    school:'Duke',        pts:17, reb:5,  ast:3,  stl:1, blk:0, note:''},
+      {name:'Jaxon Kohler',     school:'Mich. State', pts:20, reb:11, ast:3,  stl:0, blk:1, note:''},
+      {name:'Jeremy Fears Jr.', school:'Mich. State', pts:23, reb:5,  ast:27, stl:2, blk:0, note:''},
+    ]
+  },
+  { name:'Herro There Xavien', owner:'Alex Francani',
+    players:[
+      {name:'Kingston Flemings',  school:'Houston',    pts:32, reb:8,  ast:10, stl:3, blk:0, note:''},
+      {name:'Christian Anderson', school:'Texas Tech', pts:15, reb:3,  ast:4,  stl:1, blk:0, note:'elim'},
+      {name:'Trey Kaufman-Renn',  school:'Purdue',     pts:39, reb:18, ast:4,  stl:1, blk:2, note:''},
+      {name:'Zuby Ejiofor',       school:"St. John's", pts:32, reb:17, ast:7,  stl:2, blk:3, note:''},
+      {name:'Aday Mara',          school:'Michigan',   pts:26, reb:14, ast:3,  stl:1, blk:4, note:''},
+    ]
+  },
+  { name:'Burries and Cream', owner:'Anthony G.',
+    players:[
+      {name:'Brayden Burries',   school:'Arizona',    pts:34, reb:14, ast:4,  stl:2, blk:0, note:''},
+      {name:'Labaron Philon',    school:'Alabama',    pts:38, reb:14, ast:19, stl:3, blk:0, note:''},
+      {name:'Silas Demary Jr.',  school:'UConn',      pts:0,  reb:3,  ast:6,  stl:2, blk:0, note:''},
+      {name:'Joshua Jefferson',  school:'Iowa State', pts:0,  reb:0,  ast:0,  stl:0, blk:0, note:''},
+      {name:'Taris Reed Jr.',    school:'UConn',      pts:53, reb:37, ast:4,  stl:1, blk:3, note:''},
+    ]
+  },
+  { name:"Ja'Kobi Wan Kenobi", owner:'Brennan Devlin',
+    players:[
+      {name:'Tyler Bilodeau',    school:'UCLA',       pts:0,  reb:0,  ast:0,  stl:0, blk:0, note:''},
+      {name:'Nick Boyd',         school:'Wisconsin',  pts:0,  reb:0,  ast:0,  stl:0, blk:0, note:'elim'},
+      {name:'Tyler Tanner',      school:'Vanderbilt', pts:53, reb:9,  ast:12, stl:3, blk:0, note:'elim'},
+      {name:'Otega Oweh',        school:'Kansas',     pts:14, reb:8,  ast:7,  stl:1, blk:0, note:'elim'},
+      {name:'Jakobi Gillespie',  school:'Tennessee',  pts:50, reb:6,  ast:15, stl:4, blk:0, note:''},
+    ]
+  },
+];
+
+// Sum each team's stats across all starters
+TP_TEAMS.forEach(t => {
+  t.pts = t.players.reduce((s,p)=>s+p.pts,0);
+  t.reb = t.players.reduce((s,p)=>s+p.reb,0);
+  t.ast = t.players.reduce((s,p)=>s+p.ast,0);
+  t.stl = t.players.reduce((s,p)=>s+p.stl,0);
+  t.blk = t.players.reduce((s,p)=>s+p.blk,0);
+});
+
+// For each stat category, rank teams 1-8 and award 8 pts down to 1 pt
+// Ties share the average of the tied positions
+(function calcTourneyScores() {
+  ['pts','reb','ast','stl','blk'].forEach(cat => {
+    const sorted = [...TP_TEAMS].sort((a,b) => b[cat] - a[cat]);
+    const n = sorted.length;
+    let i = 0;
+    while (i < n) {
+      let j = i;
+      // find end of tie group
+      while (j < n-1 && sorted[j][cat] === sorted[j+1][cat]) j++;
+      // positions i..j are tied; award average of points they'd share
+      // positions are 0-indexed, so fantasy pts = n - position (8 for 1st, 1 for 8th)
+      const avgPts = (n - i + n - j) / 2;
+      for (let k = i; k <= j; k++) sorted[k][cat+'Score'] = avgPts;
+      i = j + 1;
+    }
+  });
+  TP_TEAMS.forEach(t => {
+    t.fantasyScore = t.ptsScore + t.rebScore + t.astScore + t.stlScore + t.blkScore;
+  });
+})();
+
+const TP_SORTED = [...TP_TEAMS].sort((a,b) => b.fantasyScore - a.fantasyScore);
+
+function renderTourney() {
+  const container = document.getElementById('tp-teams-list');
+  if (!container) return;
+
+  const el_name = document.getElementById('tp-leader-name');
+  const el_pts  = document.getElementById('tp-leader-pts');
+  const el_avg  = document.getElementById('tp-avg-pts');
+  if(el_name) el_name.textContent = TP_SORTED[0].name;
+  if(el_pts)  el_pts.textContent  = fmt(TP_SORTED[0].fantasyScore) + ' / 40';
+  if(el_avg)  el_avg.textContent  = fmt(TP_TEAMS.reduce((s,t)=>s+t.fantasyScore,0)/TP_TEAMS.length);
+
+  // Category leaders for highlighting
+  const catLeaders = {};
+  ['pts','reb','ast','stl','blk'].forEach(cat => {
+    catLeaders[cat] = Math.max(...TP_TEAMS.map(t=>t[cat]));
+  });
+
+  container.innerHTML = TP_SORTED.map((team, idx) => {
+    const rank = idx + 1;
+    const rankClass = rank===1 ? 'tp-rank-1' : rank<=3 ? 'tp-rank-2' : 'tp-rank-other';
+    const cardId = 'tp-card-' + team.name.replace(/[^a-z0-9]/gi,'');
+
+    const catRow = (cat, label) => {
+      const isLead = team[cat] === catLeaders[cat];
+      const score = team[cat+'Score'];
+      return `<div class="tp-cat-cell">
+        <span class="tp-cat-label">${label}</span>
+        <span class="tp-cat-val${isLead?' tp-cat-lead':''}">${team[cat]}</span>
+        <span class="tp-cat-score">${fmt(score)} fp</span>
+      </div>`;
+    };
+
+    const rows = team.players.map(p => {
+      let badge = '';
+      if(p.note==='swap') badge = '<span class="tp-badge-swap">swap</span>';
+      else if(p.note==='elim') badge = '<span class="tp-badge-elim">1 gm</span>';
+      else if(p.pts>0||p.reb>0||p.ast>0) badge = '<span class="tp-badge-in">still in</span>';
+      return `<tr>
+        <td>${esc(p.name)}${badge}</td>
+        <td style="color:var(--text-3);font-size:12px;">${esc(p.school)}</td>
+        <td style="text-align:right;">${p.pts}</td>
+        <td style="text-align:right;">${p.reb}</td>
+        <td style="text-align:right;">${p.ast}</td>
+        <td style="text-align:right;">${p.stl}</td>
+        <td style="text-align:right;">${p.blk}</td>
+      </tr>`;
+    }).join('');
+
+    return `<div class="tp-team-card">
+      <div class="tp-team-hdr" onclick="tpToggle('${cardId}')">
+        <div style="display:flex;align-items:center;">
+          <div class="tp-rank-badge ${rankClass}">${rank}</div>
+          <div>
+            <div class="tp-team-name">${esc(team.name)}</div>
+            <div class="tp-team-owner">${esc(team.owner)}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div style="text-align:right;">
+            <div class="tp-total">${fmt(team.fantasyScore)}<small> fantasy pts</small></div>
+          </div>
+          <span class="tp-arrow" id="arr-${cardId}">▾</span>
+        </div>
+      </div>
+      <div class="tp-body" id="${cardId}">
+        <div class="tp-cats-row">
+          ${catRow('pts','PTS')}${catRow('reb','REB')}${catRow('ast','AST')}${catRow('stl','STL')}${catRow('blk','BLK')}
+        </div>
+        <table class="tp-players-tbl">
+          <thead><tr>
+            <th>Player</th><th>School</th>
+            <th class="r">PTS</th><th class="r">REB</th><th class="r">AST</th><th class="r">STL</th><th class="r">BLK</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot><tr style="background:var(--surface-2);">
+            <td colspan="2" style="padding:6px 14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--text-2);">Team Total</td>
+            <td style="text-align:right;padding:6px 14px;font-weight:700;color:var(--navy);">${team.pts}</td>
+            <td style="text-align:right;padding:6px 14px;font-weight:700;color:var(--navy);">${team.reb}</td>
+            <td style="text-align:right;padding:6px 14px;font-weight:700;color:var(--navy);">${team.ast}</td>
+            <td style="text-align:right;padding:6px 14px;font-weight:700;color:var(--navy);">${team.stl}</td>
+            <td style="text-align:right;padding:6px 14px;font-weight:700;color:var(--navy);">${team.blk}</td>
+          </tr></tfoot>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function tpToggle(id) {
+  const body  = document.getElementById(id);
+  const arrow = document.getElementById('arr-' + id);
+  if (!body) return;
+  if (body.classList.contains('hidden')) {
+    body.classList.remove('hidden');
+    if(arrow) arrow.style.transform = '';
+  } else {
+    body.classList.add('hidden');
+    if(arrow) arrow.style.transform = 'rotate(-90deg)';
+  }
 }
 
 // ============ RENDER TEAMS ============
@@ -1194,7 +1498,7 @@ const DEFAULT_TEAMS = [
     {name:'Milos Uzan',pos:'G',school:'Houston',starter:false},
     {name:'CJ Cox',pos:'G',school:'Purdue',starter:false},
     {name:'Caleb Foster',pos:'G',school:'Duke',starter:false},
-    {name:'Braylon Mullins',pos:'G',school:'UConn',starter:false},
+    {name:'Braylon Mullins',pos:'G',school:'Arizona State',starter:false},
     {name:'Thijs De Ridder',pos:'F',school:'Virginia',starter:false},
     {name:'Coen Carr',pos:'F',school:'Michigan State',starter:false},
     {name:'Maliq Brown',pos:'F',school:'Duke',starter:false},
@@ -1242,18 +1546,18 @@ const DEFAULT_TEAMS = [
     {name:'TJ Power',pos:'G',school:'Texas Tech',starter:false},
   ]},
   { id:'t_cole', name:'Cole', owner:'Cole', players:[
-    {name:'Mark Mitchell',pos:'G',school:'Missouri',starter:true},
+    {name:'Dame Sarr',pos:'G',school:'Duke',starter:true},
     {name:'Braden Smith',pos:'G',school:'Purdue',starter:true},
-    {name:'Nate Ament',pos:'F',school:'Tennessee',starter:true},
+    {name:'Cayden Boozer',pos:'G',school:'Duke',starter:true},
     {name:'Jaxon Kohler',pos:'F',school:'Michigan State',starter:true},
     {name:'Jeremy Fears Jr.',pos:'G',school:'Michigan State',starter:true},
-    {name:'Dame Sarr',pos:'G',school:'Duke',starter:false},
+    {name:'Nate Ament',pos:'F',school:'Tennessee',starter:false},
     {name:'Tobe Awaka',pos:'F',school:'Gonzaga',starter:false},
     {name:'Joseph Tugler',pos:'F',school:'Houston',starter:false},
     {name:'Tavari Johnson',pos:'G',school:'Akron',starter:false},
     {name:'Wes Enis',pos:'G',school:'South Florida',starter:false},
     {name:'Thomas Dowd',pos:'F',school:'UConn',starter:false},
-    {name:'Cayden Boozer',pos:'G',school:'Duke',starter:false},
+    {name:'Mark Mitchell',pos:'G',school:'Missouri',starter:false},
   ]},
   { id:'t_fran', name:'Herro There Xavien', owner:'Alex Francani', players:[
     {name:'Kingston Flemings',pos:'G',school:'Houston',starter:true},
@@ -1309,6 +1613,7 @@ save();
 renderStandings();
 renderRosters();
 renderTeams();
+renderTourney();
 </script>
 </body>
 </html>
